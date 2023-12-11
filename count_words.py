@@ -82,12 +82,6 @@ def sanitize_white_spaces(text):
 def extract_dictionary_counts(text):
     return dict(pd.Series(text.split(" ")).value_counts())
 
-def sum_counts(dict_1, dict_2):
-    d1 = copy.deepcopy(dict_1)
-    d2 = copy.deepcopy(dict_2)
-    all_keys = set(d1) | set (d2)
-    return {k: dict_1.get(k, 0) + dict_2.get(k, 0) for k in all_keys}
-
 
 # -
 
@@ -109,7 +103,7 @@ words.head()
 
 # ## Word counts
 
-counts_all = {}
+counts_all = []
 for file in tqdm(files):
     try:
         text = extract_full_text(file)
@@ -119,18 +113,20 @@ for file in tqdm(files):
         text = remove_punctuation(text)
         text = sanitize_white_spaces(text)
         counts_text = extract_dictionary_counts(text)
-        counts_all = sum_counts(counts_all, counts_text)
+        counts_df = pd.DataFrame.from_dict(counts_text, orient="index").reset_index()
+        counts_df = counts_df.rename(columns={"index": "word", 0: "counts"})
+        counts_all.append(counts_df)
     except TypeError:
         print(f"Error reading file {file}")
         continue
+counts_all = pd.concat(counts_all)
 
-counts_df = pd.DataFrame.from_dict(counts_all, orient="index").reset_index()
-counts_df = counts_df.rename(columns={"index": "word", 0: "counts"})
-counts_df = counts_df.sort_values("counts", ascending=False).reset_index(drop=True)
-counts_df.to_csv("data/tmp_counts.csv", sep=";", index=False, header=False)
-counts_df.head()
+counts_all = counts_all.groupby("word", as_index=False).sum()
+counts_all = counts_all.sort_values("counts", ascending=False).reset_index(drop=True)
+counts_all.to_csv("data/tmp_counts.csv", sep=";", index=False, header=False)
+counts_all.head()
 
-words_counts = words.merge(counts_df, how="left", on="word").fillna(0)
+words_counts = words.merge(counts_all, how="left", on="word").fillna(0)
 words_counts["counts"] = words_counts["counts"].astype(int)
 words_counts.head()
 
