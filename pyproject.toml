@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "catalan-words-frequency-estimator"
+version = "1.0.0"
+description = ""
+authors = ["Didac Fortuny <dacfortuny@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "catalan_words_frequency_estimator" }]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^2.0.0"
+ebooklib = "^0.18"
+tqdm = "^4.0.0"
+
+[tool.poetry.group.dev.dependencies]
+jupyterlab = "^4.0.0"
+jupytext = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
